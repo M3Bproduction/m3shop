@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | M3'Shop</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<script>
+  if (localStorage.getItem("isAdmin") !== "true") {
+    window.location.href = "admin-login.html";
+  }
+</script>
+
+<header class="top-nav">
+  <div class="nav-logo">Admin - M3'Shop</div>
+  <nav class="top-nav-links">
+    <a href="index.html">Accueil</a>
+    <a href="products.html">Produits</a>
+    <a onclick="logout()" class="btn btn-danger">Déconnexion</a>
+  </nav>
+</header>
+
+<main class="admin-container">
+  <h1>Gestion des Produits</h1>
+
+  <form id="product-form">
+    <input type="hidden" id="editIndex" value="">
+    <label>Nom du produit :</label>
+    <input type="text" id="name" required>
+
+    <label>Prix (KMF) :</label>
+    <input type="number" id="price" required>
+
+    <label>Image (URL ou chemin local) :</label>
+    <input type="text" id="image" required>
+
+    <label>Description :</label>
+    <textarea id="description" required></textarea>
+
+    <button type="submit" class="btn">Enregistrer</button>
+  </form>
+
+  <h2>Produits enregistrés</h2>
+  <div id="product-list" class="product-grid"></div>
+
+  <h2>Commandes reçues</h2>
+  <button class="btn btn-danger" onclick="supprimerToutesCommandes()">Supprimer toutes les commandes</button>
+  <div id="orders-list" class="order-list"></div>
+</main>
+<script>
+  function logout() {
+    localStorage.removeItem("isAdmin");
+    window.location.href = "admin-login.html";
+  }
+
+  // Gestion Produits
+  const form = document.getElementById("product-form");
+  const productList = document.getElementById("product-list");
+  let products = JSON.parse(localStorage.getItem("products")) || [];
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const price = parseInt(document.getElementById("price").value.trim());
+    const image = document.getElementById("image").value.trim();
+    const description = document.getElementById("description").value.trim();
+    const editIndex = document.getElementById("editIndex").value;
+    const product = { name, price, image, description };
+
+    if (editIndex === "") {
+      products.push(product);
+    } else {
+      products[editIndex] = product;
+    }
+
+    localStorage.setItem("products", JSON.stringify(products));
+    form.reset();
+    document.getElementById("editIndex").value = "";
+    renderProducts();
+  });
+
+  function renderProducts() {
+    productList.innerHTML = "";
+    products.forEach((p, index) => {
+      const item = document.createElement("div");
+      item.classList.add("product-card");
+      item.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>${p.price} KMF</p>
+        <p style="font-size: 0.9em;">${p.description}</p>
+        <button onclick="editProduct(${index})" class="btn">Modifier</button>
+        <button onclick="deleteProduct(${index})" class="btn btn-danger">Supprimer</button>
+      `;
+      productList.appendChild(item);
+    });
+  }
+
+  function editProduct(index) {
+    const p = products[index];
+    document.getElementById("name").value = p.name;
+    document.getElementById("price").value = p.price;
+    document.getElementById("image").value = p.image;
+    document.getElementById("description").value = p.description;
+    document.getElementById("editIndex").value = index;
+    window.scrollTo(0, 0);
+  }
+
+  function deleteProduct(index) {
+    if (confirm("Supprimer ce produit ?")) {
+      products.splice(index, 1);
+      localStorage.setItem("products", JSON.stringify(products));
+      renderProducts();
+    }
+  }
+
+  renderProducts();
+
+  // Gestion des commandes
+  function afficherCommandes() {
+    const orders = JSON.parse(localStorage.getItem("orders")) || [];
+    const ordersList = document.getElementById("orders-list");
+    ordersList.innerHTML = "";
+
+    if (orders.length === 0) {
+      ordersList.innerHTML = "<p>Aucune commande reçue pour l’instant.</p>";
+      return;
+    }
+
+    orders.forEach((order, index) => {
+      if (order.traitee === undefined) order.traitee = false;
+
+      const div = document.createElement("div");
+      div.className = "order-card";
+      div.style.backgroundColor = order.traitee ? "#dfffd8" : "#fff";
+      div.innerHTML = `
+        <h4>Commande #${order.id}</h4>
+        <p><strong>Client :</strong> ${order.client}</p>
+        <p><strong>Téléphone :</strong> ${order.telephone}</p>
+        <p><strong>Adresse :</strong> ${order.adresse}</p>
+        <p><strong>Paiement :</strong> ${order.paiement}</p>
+        <p><strong>Date :</strong> ${order.date}</p>
+        <h5>Produits :</h5>
+        <ul>
+          ${order.produits.map(p => `
+            <li>${p.name} × ${p.quantity} — <strong>${p.price * p.quantity} KMF</strong></li>
+          `).join("")}
+        </ul>
+        <button class="btn btn-secondary" onclick="telechargerPDF(${order.id})">Télécharger en PDF</button>
+        <p><strong>Status :</strong> ${order.traitee ? "<span style='color:green;'>Traité</span>" : "<span style='color:red;'>En attente</span>"}</p>
+        ${order.traitee ? "" : `<button class="btn" onclick="marquerCommeTraitee(${index})">Marquer comme traitée</button>`}
+        <hr />
+      `;
+      ordersList.appendChild(div);
+    });
+
+    // Enregistrer les modifications
+    localStorage.setItem("orders", JSON.stringify(orders));
+  }
+
+  function marquerCommeTraitee(index) {
+    const orders = JSON.parse(localStorage.getItem("orders")) || [];
+    orders[index].traitee = true;
+    localStorage.setItem("orders", JSON.stringify(orders));
+    afficherCommandes();
+  }
+
+  function supprimerToutesCommandes() {
+    if (confirm("Supprimer toutes les commandes ?")) {
+      localStorage.removeItem("orders");
+      afficherCommandes();
+    }
+  }
+
+  afficherCommandes();
+
+  async function telechargerPDF(orderId) {
+    const { jsPDF } = window.jspdf;
+    const orders = JSON.parse(localStorage.getItem("orders")) || [];
+    const order = orders.find(o => o.id === orderId);
+
+    if (!order) {
+      alert("Commande introuvable.");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text(`Commande #${order.id}`, 10, 20);
+    doc.setFontSize(12);
+    doc.text(`Client : ${order.client}`, 10, 30);
+    doc.text(`Téléphone : ${order.telephone}`, 10, 40);
+    doc.text(`Adresse : ${order.adresse}`, 10, 50);
+    doc.text(`Paiement : ${order.paiement}`, 10, 60);
+    doc.text(`Date : ${order.date}`, 10, 70);
+
+    doc.text("Produits :", 10, 80);
+    let y = 90;
+    order.produits.forEach((p, i) => {
+      doc.text(`- ${p.name} × ${p.quantity} — ${p.price * p.quantity} KMF`, 12, y);
+      y += 10;
+    });
+
+    doc.save(`commande_${order.id}.pdf`);
+  }
+</script>
+</body>
+</html>
