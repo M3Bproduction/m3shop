@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paiement | M3 Shop</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="top-nav">
+    <div class="nav-logo">M3 Shop</div>
+    <nav class="top-nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="products.html">Produits</a>
+      <a href="cart.html">Panier</a>
+    </nav>
+  </header>
+
+  <!-- Contenu -->
+  <main class="checkout-container">
+    <h1>Finaliser ma commande</h1>
+
+    <form id="checkout-form">
+      <label>Nom complet :</label>
+      <input type="text" id="fullname" required>
+
+      <label>Téléphone :</label>
+      <input type="tel" id="phone" required>
+
+      <label>Adresse de livraison :</label>
+      <textarea id="address" rows="3" required></textarea>
+
+      <label>Méthode de paiement :</label>
+      <select id="payment-method" required>
+        <option value="mvola">MVola</option>
+        <option value="cash">Paiement à la livraison</option>
+      </select>
+
+      <div id="mvola-section" style="display: block;">
+        <label>Numéro MVola :</label>
+        <input type="tel" id="mvola-number">
+      </div>
+
+      <p class="total-checkout">Total à payer : <span id="total-price">0 KMF</span></p>
+
+      <button type="submit" class="btn">Confirmer la commande</button>
+    </form>
+
+    <div id="confirmation-message" style="display:none; margin-top: 20px;">
+      <h3>🎉 Merci pour votre commande !</h3>
+      <p>Nous vous contacterons sous peu pour la livraison.</p>
+    </div>
+  </main>
+
+  <footer>
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-link">
+      <span class="material-icons">home</span>
+      <span>Accueil</span>
+    </a>
+    <a href="products.html" class="nav-link">
+      <span class="material-icons">storefront</span>
+      <span>Produits</span>
+    </a>
+    <a href="cart.html" class="nav-link">
+      <span class="material-icons">shopping_cart</span>
+      <span>Panier</span>
+    </a>
+  </nav>
+  </footer>
+
+  <!-- JS -->
+  <script>
+    const totalElement = document.getElementById("total-price");
+    const mvolaSection = document.getElementById("mvola-section");
+    const paymentMethod = document.getElementById("payment-method");
+
+    // Affiche le total
+    function displayTotal() {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let total = 0;
+      cart.forEach(item => {
+        total += item.price * item.quantity;
+      });
+      totalElement.textContent = total + " KMF";
+    }
+
+    // Affiche ou cache le champ MVola selon la méthode choisie
+    paymentMethod.addEventListener("change", () => {
+      mvolaSection.style.display = paymentMethod.value === "mvola" ? "block" : "none";
+    });
+
+    // Gestion soumission formulaire
+    document.getElementById("checkout-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      if (cart.length === 0) {
+        alert("Panier vide.");
+        return;
+      }
+
+      const fullname = document.getElementById("fullname").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const method = paymentMethod.value;
+      const mvolaNumber = document.getElementById("mvola-number").value.trim();
+
+      if (!fullname || !phone || !address || (method === "mvola" && !mvolaNumber)) {
+        alert("Veuillez remplir tous les champs.");
+        return;
+      }
+
+      const cleanedCart = cart.map(item => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity || 1
+      }));
+
+      const commande = {
+        id: Date.now(),
+        client: fullname,
+        telephone: phone,
+        adresse: address,
+        paiement: method === "mvola" ? `MVola - ${mvolaNumber}` : "Paiement à la livraison",
+        date: new Date().toLocaleString(),
+        produits: cleanedCart
+      };
+
+      const commandes = JSON.parse(localStorage.getItem("orders")) || [];
+      commandes.push(commande);
+      localStorage.setItem("orders", JSON.stringify(commandes));
+
+      localStorage.removeItem("cart");
+      document.getElementById("checkout-form").style.display = "none";
+      document.getElementById("confirmation-message").style.display = "block";
+    });
+
+    displayTotal();
+  </script>
+</body>
+</html>
