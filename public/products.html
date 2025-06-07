@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Produits | M3'Shop</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="top-nav">
+    <div class="nav-logo">M3'Shop</div>
+    <nav class="top-nav-links">
+      <a href="index.html">Accueil</a>
+      <a href="products.html">Produits</a>
+      <a href="cart.html">Panier</a>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main class="products-container">
+    <h1>Nos Produits</h1>
+    <div id="product-list" class="product-grid"></div>
+  </main>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-link">
+      <span class="material-icons">home</span>
+      <span>Accueil</span>
+    </a>
+    <a href="products.html" class="nav-link">
+      <span class="material-icons">storefront</span>
+      <span>Produits</span>
+    </a>
+    <a href="cart.html" class="nav-link">
+      <span class="material-icons">shopping_cart</span>
+      <span>Panier</span>
+    </a>
+  </nav>
+
+  <!-- JS -->
+  <script>
+    const productList = document.getElementById("product-list");
+
+    function loadProducts() {
+      const products = JSON.parse(localStorage.getItem("products")) || [];
+
+      if (products.length === 0) {
+        productList.innerHTML = "<p>Aucun produit disponible pour le moment.</p>";
+        return;
+      }
+
+      products.forEach((product, index) => {
+        const item = document.createElement("div");
+        item.classList.add("product-card");
+        item.innerHTML = `
+          <img src="${product.image}" alt="${product.name}">
+          <h3>${product.name}</h3>
+          <p>${product.price} KMF</p>
+          <p style="font-size: 0.9em;">${product.description}</p>
+          <button onclick="addToCart(${index})" class="btn">Ajouter au panier</button>
+        `;
+        productList.appendChild(item);
+      });
+    }
+
+    function addToCart(index) {
+      const products = JSON.parse(localStorage.getItem("products")) || [];
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+      const selectedProduct = products[index];
+      const existing = cart.find(p => p.name === selectedProduct.name);
+
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ ...selectedProduct, quantity: 1 });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+      alert("Produit ajouté au panier !");
+    }
+
+    loadProducts();
+  </script>
+
+</body>
+</html>
