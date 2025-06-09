@@ -74,73 +74,71 @@
   </footer>
 
   <!-- JS -->
-  <script>
-    const totalElement = document.getElementById("total-price");
-    const mvolaSection = document.getElementById("mvola-section");
-    const paymentMethod = document.getElementById("payment-method");
+  <script type="module">
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 
-    // Affiche le total
-    function displayTotal() {
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
-      let total = 0;
-      cart.forEach(item => {
-        total += item.price * item.quantity;
-      });
-      totalElement.textContent = total + " KMF";
+  const firebaseConfig = {
+    apiKey: "AIzaSyCDvLearVKssAytX518E6PmnIk0nNwhnIY",
+    authDomain: "m3shop-d89ba.firebaseapp.com",
+    databaseURL: "https://m3shop-d89ba-default-rtdb.firebaseio.com",
+    projectId: "m3shop-d89ba",
+    storageBucket: "m3shop-d89ba.appspot.com",
+    messagingSenderId: "834427919228",
+    appId: "1:834427919228:web:a5dae9f6692821782ea2f9",
+    measurementId: "G-L2WEMND7ZZ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  document.getElementById("checkout-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    if (cart.length === 0) {
+      alert("Panier vide.");
+      return;
     }
 
-    // Affiche ou cache le champ MVola selon la méthode choisie
-    paymentMethod.addEventListener("change", () => {
-      mvolaSection.style.display = paymentMethod.value === "mvola" ? "block" : "none";
-    });
+    const fullname = document.getElementById("fullname").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const method = document.getElementById("payment-method").value;
+    const mvolaNumber = document.getElementById("mvola-number").value.trim();
 
-    // Gestion soumission formulaire
-    document.getElementById("checkout-form").addEventListener("submit", function(e) {
-      e.preventDefault();
+    if (!fullname || !phone || !address || (method === "mvola" && !mvolaNumber)) {
+      alert("Veuillez remplir tous les champs.");
+      return;
+    }
 
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
-      if (cart.length === 0) {
-        alert("Panier vide.");
-        return;
-      }
+    const cleanedCart = cart.map(item => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity || 1
+    }));
 
-      const fullname = document.getElementById("fullname").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const address = document.getElementById("address").value.trim();
-      const method = paymentMethod.value;
-      const mvolaNumber = document.getElementById("mvola-number").value.trim();
+    const commande = {
+      id: Date.now(),
+      client: fullname,
+      telephone: phone,
+      adresse: address,
+      paiement: method === "mvola" ? `MVola - ${mvolaNumber}` : "Paiement à la livraison",
+      date: new Date().toLocaleString(),
+      produits: cleanedCart,
+      traite: false
+    };
 
-      if (!fullname || !phone || !address || (method === "mvola" && !mvolaNumber)) {
-        alert("Veuillez remplir tous les champs.");
-        return;
-      }
-
-      const cleanedCart = cart.map(item => ({
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity || 1
-      }));
-
-      const commande = {
-        id: Date.now(),
-        client: fullname,
-        telephone: phone,
-        adresse: address,
-        paiement: method === "mvola" ? `MVola - ${mvolaNumber}` : "Paiement à la livraison",
-        date: new Date().toLocaleString(),
-        produits: cleanedCart
-      };
-
-      const commandes = JSON.parse(localStorage.getItem("orders")) || [];
-      commandes.push(commande);
-      localStorage.setItem("orders", JSON.stringify(commandes));
-
-      localStorage.removeItem("cart");
-      document.getElementById("checkout-form").style.display = "none";
-      document.getElementById("confirmation-message").style.display = "block";
-    });
-
-    displayTotal();
-  </script>
+    push(ref(db, "commandes"), commande)
+      .then(() => {
+        localStorage.removeItem("cart");
+        document.getElementById("checkout-form").style.display = "none";
+        document.getElementById("confirmation-message").style.display = "block";
+      })
+      .catch(error => {
+        alert("Erreur d'enregistrement : " + error.message);
+      });
+  });
+</script>
 </body>
 </html>
