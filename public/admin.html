@@ -50,10 +50,11 @@
   <button class="btn btn-danger" onclick="supprimerToutesCommandes()">Supprimer toutes les commandes</button>
   <div id="orders-list" class="order-list"></div>
 </main>
-<!-- Ajoute ce script en bas de admin.html -->
+
+<!-- Script Firebase + gestion produits/commandes -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
+  import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCDvLearVKssAytX518E6PmnIk0nNwhnIY",
@@ -113,7 +114,44 @@
     }
   };
 
+  window.supprimerToutesCommandes = function () {
+    if (confirm("Supprimer toutes les commandes ?")) {
+      remove(ref(db, "orders"));
+    }
+  };
+
+  window.logout = function () {
+    localStorage.removeItem("isAdmin");
+    window.location.href = "admin-login.html";
+  };
+
+  function afficherCommandes() {
+    const ordersRef = ref(db, "orders");
+    const ordersList = document.getElementById("orders-list");
+
+    onValue(ordersRef, (snapshot) => {
+      ordersList.innerHTML = "";
+      snapshot.forEach((childSnapshot) => {
+        const order = childSnapshot.val();
+        const div = document.createElement("div");
+        div.classList.add("order-card");
+        div.innerHTML = `
+          <p><strong>Nom :</strong> ${order.name}</p>
+          <p><strong>Téléphone :</strong> ${order.phone}</p>
+          <p><strong>Adresse :</strong> ${order.address}</p>
+          <p><strong>Panier :</strong></p>
+          <ul>
+            ${order.cart.map(p => `<li>${p.name} - ${p.price} KMF x ${p.quantity}</li>`).join('')}
+          </ul>
+          <hr>
+        `;
+        ordersList.appendChild(div);
+      });
+    });
+  }
+
   renderProducts();
+  afficherCommandes();
 </script>
 
 </body>
