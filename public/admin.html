@@ -50,9 +50,10 @@
   <button class="btn btn-danger" onclick="supprimerToutesCommandes()">Supprimer toutes les commandes</button>
   <div id="orders-list" class="order-list"></div>
 </main>
+<!-- Ajoute ce script en bas de admin.html -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
+  import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCDvLearVKssAytX518E6PmnIk0nNwhnIY",
@@ -61,58 +62,59 @@
     projectId: "m3shop-d89ba",
     storageBucket: "m3shop-d89ba.appspot.com",
     messagingSenderId: "834427919228",
-    appId: "1:834427919228:web:a5dae9f6692821782ea2f9",
-    measurementId: "G-L2WEMND7ZZ"
+    appId: "1:834427919228:web:a5dae9f6692821782ea2f9"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const ordersList = document.getElementById("orders-list");
+  const form = document.getElementById("product-form");
+  const productList = document.getElementById("product-list");
 
-  function afficherCommandes() {
-    const commandesRef = ref(db, "commandes");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    onValue(commandesRef, (snapshot) => {
-      const data = snapshot.val();
-      ordersList.innerHTML = "";
+    const name = document.getElementById("name").value.trim();
+    const price = parseInt(document.getElementById("price").value.trim());
+    const image = document.getElementById("image").value.trim();
+    const description = document.getElementById("description").value.trim();
 
-      if (!data) {
-        ordersList.innerHTML = "<p>Aucune commande trouvée.</p>";
-        return;
-      }
+    const newProductRef = push(ref(db, "products"));
+    await set(newProductRef, { name, price, image, description });
 
-      Object.entries(data).forEach(([key, order]) => {
-        const div = document.createElement("div");
-        div.className = "order-card";
-        div.innerHTML = `
-          <h4>Commande #${order.id}</h4>
-          <p><strong>Client :</strong> ${order.client}</p>
-          <p><strong>Téléphone :</strong> ${order.telephone}</p>
-          <p><strong>Adresse :</strong> ${order.adresse}</p>
-          <p><strong>Paiement :</strong> ${order.paiement}</p>
-          <p><strong>Date :</strong> ${order.date}</p>
-          <h5>Produits :</h5>
-          <ul>
-            ${order.produits.map(p => `
-              <li>${p.name} × ${p.quantity} — <strong>${p.price * p.quantity} Ar</strong></li>
-            `).join("")}
-          </ul>
-          <p><strong>Status :</strong> ${order.traite ? "✅ Traité" : "⏳ En attente"}</p>
-          <button onclick="marquerCommeTraite('${key}')" class="btn">Marquer comme traité</button>
-          <hr />
+    form.reset();
+  });
+
+  function renderProducts() {
+    const productsRef = ref(db, "products");
+    onValue(productsRef, (snapshot) => {
+      productList.innerHTML = "";
+      snapshot.forEach((childSnapshot) => {
+        const product = childSnapshot.val();
+        const key = childSnapshot.key;
+
+        const item = document.createElement("div");
+        item.classList.add("product-card");
+        item.innerHTML = `
+          <img src="${product.image}" alt="${product.name}">
+          <h3>${product.name}</h3>
+          <p>${product.price} Ar</p>
+          <p>${product.description}</p>
+          <button class="btn btn-danger" onclick="deleteProduct('${key}')">Supprimer</button>
         `;
-        ordersList.appendChild(div);
+        productList.appendChild(item);
       });
     });
   }
 
-  window.marquerCommeTraite = function (id) {
-    const orderRef = ref(db, `commandes/${id}`);
-    update(orderRef, { traite: true });
+  window.deleteProduct = function (key) {
+    if (confirm("Supprimer ce produit ?")) {
+      remove(ref(db, "products/" + key));
+    }
   };
 
-  afficherCommandes();
+  renderProducts();
 </script>
+
 </body>
 </html>
