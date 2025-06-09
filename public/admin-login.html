@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Connexion Admin</title>
+  <title>M3'Shop | Connexion Admin</title>
   <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
@@ -27,6 +27,9 @@
     const form = document.getElementById("login-form");
     const errorMsg = document.getElementById("error-message");
 
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+
     const adminUser = {
       username: "admin",
       password: "123456"
@@ -34,8 +37,8 @@
 
     form.addEventListener("submit", function(e) {
       e.preventDefault();
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
 
       if (username === adminUser.username && password === adminUser.password) {
         localStorage.setItem("isAdmin", "true");
@@ -44,6 +47,10 @@
         errorMsg.textContent = "Identifiants incorrects.";
       }
     });
+
+    // Nettoyer le message d'erreur si l'utilisateur retape
+    usernameInput.addEventListener("input", () => errorMsg.textContent = "");
+    passwordInput.addEventListener("input", () => errorMsg.textContent = "");
   </script>
 
 </body>
