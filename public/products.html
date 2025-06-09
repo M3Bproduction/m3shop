@@ -9,7 +9,6 @@
 </head>
 <body>
 
-  <!-- Header -->
   <header class="top-nav">
     <div class="nav-logo">M3'Shop</div>
     <nav class="top-nav-links">
@@ -19,13 +18,11 @@
     </nav>
   </header>
 
-  <!-- Main -->
   <main class="products-container">
     <h1>Nos Produits</h1>
     <div id="product-list" class="product-grid"></div>
   </main>
 
-  <!-- Bottom nav -->
   <nav class="bottom-nav">
     <a href="../index.html" class="nav-link">
       <span class="material-icons">home</span>
@@ -41,51 +38,47 @@
     </a>
   </nav>
 
-  <!-- JS -->
-  <!-- Partie HTML -->
-<div class="product-grid" id="client-product-list"></div>
+  <div class="product-grid" id="client-product-list"></div>
 
-<!-- Firebase Script -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCDvLearVKssAytX518E6PmnIk0nNwhnIY",
-    authDomain: "m3shop-d89ba.firebaseapp.com",
-    databaseURL: "https://m3shop-d89ba-default-rtdb.firebaseio.com",
-    projectId: "m3shop-d89ba",
-    storageBucket: "m3shop-d89ba.appspot.com",
-    messagingSenderId: "834427919228",
-    appId: "1:834427919228:web:a5dae9f6692821782ea2f9"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyCDvLearVKssAytX518E6PmnIk0nNwhnIY",
+      authDomain: "m3shop-d89ba.firebaseapp.com",
+      databaseURL: "https://m3shop-d89ba-default-rtdb.firebaseio.com",
+      projectId: "m3shop-d89ba",
+      storageBucket: "m3shop-d89ba.appspot.com",
+      messagingSenderId: "834427919228",
+      appId: "1:834427919228:web:a5dae9f6692821782ea2f9"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const list = document.getElementById("client-product-list");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const list = document.getElementById("client-product-list");
 
-  function showProducts() {
-    const productsRef = ref(db, "products");
-    onValue(productsRef, (snapshot) => {
-      list.innerHTML = "";
-      snapshot.forEach((child) => {
-        const p = child.val();
-        const card = document.createElement("div");
-        card.classList.add("product-card");
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}">
-          <h3>${p.name}</h3>
-          <p>${p.price} Ar</p>
-          <p>${p.description}</p>
-        `;
-        list.appendChild(card);
+    function showProducts() {
+      const productsRef = ref(db, "products");
+      onValue(productsRef, (snapshot) => {
+        list.innerHTML = "";
+        snapshot.forEach((child) => {
+          const p = child.val();
+          const card = document.createElement("div");
+          card.classList.add("product-card");
+          card.innerHTML = `
+            <img src="${p.image}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <p>${p.price} Ar</p>
+            <p>${p.description}</p>
+          `;
+          list.appendChild(card);
+        });
       });
-    });
-  }
+    }
 
-  showProducts();
-</script>
-
+    showProducts();
+  </script>
 
 </body>
 </html>
