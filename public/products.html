@@ -42,50 +42,50 @@
   </nav>
 
   <!-- JS -->
-  <script>
-    const productList = document.getElementById("product-list");
+  <!-- Partie HTML -->
+<div class="product-grid" id="client-product-list"></div>
 
-    function loadProducts() {
-      const products = JSON.parse(localStorage.getItem("products")) || [];
+<!-- Firebase Script -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
 
-      if (products.length === 0) {
-        productList.innerHTML = "<p>Aucun produit disponible pour le moment.</p>";
-        return;
-      }
+  const firebaseConfig = {
+    apiKey: "AIzaSyCDvLearVKssAytX518E6PmnIk0nNwhnIY",
+    authDomain: "m3shop-d89ba.firebaseapp.com",
+    databaseURL: "https://m3shop-d89ba-default-rtdb.firebaseio.com",
+    projectId: "m3shop-d89ba",
+    storageBucket: "m3shop-d89ba.appspot.com",
+    messagingSenderId: "834427919228",
+    appId: "1:834427919228:web:a5dae9f6692821782ea2f9"
+  };
 
-      products.forEach((product, index) => {
-        const item = document.createElement("div");
-        item.classList.add("product-card");
-        item.innerHTML = `
-          <img src="${product.image}" alt="${product.name}">
-          <h3>${product.name}</h3>
-          <p>${product.price} KMF</p>
-          <p style="font-size: 0.9em;">${product.description}</p>
-          <button onclick="addToCart(${index})" class="btn">Ajouter au panier</button>
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const list = document.getElementById("client-product-list");
+
+  function showProducts() {
+    const productsRef = ref(db, "products");
+    onValue(productsRef, (snapshot) => {
+      list.innerHTML = "";
+      snapshot.forEach((child) => {
+        const p = child.val();
+        const card = document.createElement("div");
+        card.classList.add("product-card");
+        card.innerHTML = `
+          <img src="${p.image}" alt="${p.name}">
+          <h3>${p.name}</h3>
+          <p>${p.price} Ar</p>
+          <p>${p.description}</p>
         `;
-        productList.appendChild(item);
+        list.appendChild(card);
       });
-    }
+    });
+  }
 
-    function addToCart(index) {
-      const products = JSON.parse(localStorage.getItem("products")) || [];
-      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  showProducts();
+</script>
 
-      const selectedProduct = products[index];
-      const existing = cart.find(p => p.name === selectedProduct.name);
-
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cart.push({ ...selectedProduct, quantity: 1 });
-      }
-
-      localStorage.setItem("cart", JSON.stringify(cart));
-      alert("Produit ajouté au panier !");
-    }
-
-    loadProducts();
-  </script>
 
 </body>
 </html>
