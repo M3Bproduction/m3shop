@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -35,8 +34,8 @@
     <label>Prix (KMF) :</label>
     <input type="number" id="price" required>
 
-    <label>Image (télécharger une image) :</label>
-    <input type="file" id="image" accept="image/*" required>
+    <label>Image (URL ou chemin local) :</label>
+    <input type="text" id="image" required>
 
     <label>Description :</label>
     <textarea id="description" required></textarea>
@@ -51,11 +50,10 @@
   <button class="btn btn-danger" onclick="supprimerToutesCommandes()">Supprimer toutes les commandes</button>
   <div id="orders-list" class="order-list"></div>
 </main>
-
+<!-- Ajoute ce script en bas de admin.html -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-  import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
-  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-storage.js";
+  import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCDvLearVKssAytX518E6PmnIk0nNwhnIY",
@@ -69,7 +67,6 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const storage = getStorage(app);
 
   const form = document.getElementById("product-form");
   const productList = document.getElementById("product-list");
@@ -79,20 +76,11 @@
 
     const name = document.getElementById("name").value.trim();
     const price = parseInt(document.getElementById("price").value.trim());
-    const imageFile = document.getElementById("image").files[0];
+    const image = document.getElementById("image").value.trim();
     const description = document.getElementById("description").value.trim();
 
-    if (!imageFile) {
-      alert("Veuillez sélectionner une image.");
-      return;
-    }
-
-    const imageStorageRef = storageRef(storage, 'product-images/' + imageFile.name);
-    await uploadBytes(imageStorageRef, imageFile);
-    const imageUrl = await getDownloadURL(imageStorageRef);
-
     const newProductRef = push(ref(db, "products"));
-    await set(newProductRef, { name, price, image: imageUrl, description });
+    await set(newProductRef, { name, price, image, description });
 
     form.reset();
   });
