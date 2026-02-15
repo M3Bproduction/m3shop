@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M3'Shop</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="#">M3'Shop</a>
+    <a href="cart.html" class="btn btn-light">Panier 🛒</a>
+  </div>
+</nav>
+
+<button class="btn btn-success" onclick="orderWhatsApp()">
+Commander sur WhatsApp
+</button>
+<script>
+	function orderWhatsApp() {
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  let message = "Bonjour, je veux commander : ";
+  
+  cart.forEach(id => {
+    const product = products.find(p => p.id === id);
+    message += product.name + " - ";
+  });
+
+  const phone = "2693438945"; 
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
+}
+</script>
+</body>
+</html>
