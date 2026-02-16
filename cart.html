@@ -15,7 +15,12 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container">
-    <a class="navbar-brand" href="#">M3'Shop</a>
+    <!-- LOGO -->
+    <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <img src="images/m3shop.png"
+           alt="Logo M3'Shop"
+           class="logo-navbar">
+    </a>
     <a href="cart.html" class="btn btn-light position-relative fw-semibold">
       <i class="bi bi-cart"></i> Panier
       <span id="cart-count" 
@@ -49,10 +54,6 @@
 <script>
 
 function displayCart() {
-  if (!Array.isArray(cart)) {
-  localStorage.removeItem("cart");
-  return;
-  }
   const cart = getCart();
   const cartContainer = document.getElementById("cart-items");
   const totalElement = document.getElementById("cart-total");
@@ -122,6 +123,11 @@ function displayCart() {
   });
 
   totalElement.textContent = total.toLocaleString();
+
+  if (!Array.isArray(cart)) {
+  localStorage.removeItem("cart");
+  return;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", displayCart);
