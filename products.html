@@ -27,8 +27,12 @@
     </a>
 
     <div class="ms-auto">
-      <a href="cart.html" class="btn btn-light fw-semibold">
+      <a href="cart.html" class="btn btn-light position-relative fw-semibold">
         <i class="bi bi-cart"></i> Panier
+        <span id="cart-count" 
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          0
+        </span>
       </a>
     </div>
   </div>
@@ -59,6 +63,32 @@
   </div>
 </div>
 
+<!-- FILTRE + TRI -->
+<div class="container mt-3">
+  <div class="row g-3 justify-content-center">
+
+    <!-- Catégorie -->
+    <div class="col-md-4">
+      <select id="categoryFilter" class="form-select shadow-sm">
+        <option value="all">Toutes les catégories</option>
+        <option value="vetements">Vêtements</option>
+        <option value="accessoires">Accessoires</option>
+        <option value="tech">Technologie</option>
+      </select>
+    </div>
+
+    <!-- Tri -->
+    <div class="col-md-4">
+      <select id="priceSort" class="form-select shadow-sm">
+        <option value="default">Trier par prix</option>
+        <option value="asc">Prix croissant</option>
+        <option value="desc">Prix décroissant</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
 <!-- PRODUITS -->
 <div class="container py-5">
   <div class="row g-4" id="product-list"></div>
@@ -74,8 +104,9 @@
 <script>
 const container = document.getElementById("product-list");
 const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+const priceSort = document.getElementById("priceSort");
 
-// Fonction affichage produits
 function displayProducts(filteredProducts) {
   container.innerHTML = "";
 
@@ -108,7 +139,7 @@ function displayProducts(filteredProducts) {
 
             <button class="btn btn-primary mt-auto"
                     onclick="addToCart(${product.id})">
-              <i class="bi bi-cart-plus"></i> Ajouter
+              Ajouter
             </button>
           </div>
 
@@ -118,20 +149,40 @@ function displayProducts(filteredProducts) {
   });
 }
 
-// Affichage initial
-displayProducts(products);
+function filterAndSortProducts() {
 
-// Recherche dynamique
-searchInput.addEventListener("keyup", () => {
   const searchValue = searchInput.value.toLowerCase();
+  const selectedCategory = categoryFilter.value;
+  const sortValue = priceSort.value;
 
-  const filtered = products.filter(product =>
-    product.name.toLowerCase().includes(searchValue)
-  );
+  let filtered = products.filter(product => {
+
+    const matchName = product.name.toLowerCase().includes(searchValue);
+    const matchCategory = selectedCategory === "all" || product.category === selectedCategory;
+
+    return matchName && matchCategory;
+  });
+
+  // TRI PAR PRIX
+  if (sortValue === "asc") {
+    filtered.sort((a, b) => a.price - b.price);
+  }
+
+  if (sortValue === "desc") {
+    filtered.sort((a, b) => b.price - a.price);
+  }
 
   displayProducts(filtered);
+}
+
+// Initialisation
+document.addEventListener("DOMContentLoaded", () => {
+  displayProducts(products);
+
+  searchInput.addEventListener("keyup", filterAndSortProducts);
+  categoryFilter.addEventListener("change", filterAndSortProducts);
+  priceSort.addEventListener("change", filterAndSortProducts);
 });
 </script>
-
 </body>
 </html>
