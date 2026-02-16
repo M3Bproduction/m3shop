@@ -1,13 +1,5 @@
 function getCart() {
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  // Si ancien format détecté (tableau de nombres)
-  if (cart.length > 0 && typeof cart[0] === "number") {
-    cart = [];
-    localStorage.removeItem("cart");
-  }
-
-  return cart;
+  return JSON.parse(localStorage.getItem("cart")) || [];
 }
 
 function saveCart(cart) {
