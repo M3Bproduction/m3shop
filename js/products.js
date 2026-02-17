@@ -1,5 +1,26 @@
 const products = [
   {
+    id: 23,
+    name: "Bracelet 1",
+    price: 750,
+    image: "images/braceleblanp.jpg",
+    category: "Bracelet"
+  },
+  {
+    id: 24,
+    name: "Bracelet 2",
+    price: 1000,
+    image: "images/bracelebleu.jpg",
+    category: "Bracelet"
+  },
+  {
+    id: 25,
+    name: "Bracelet 3",
+    price: 750,
+    image: "images/bracelever.jpg",
+    category: "Bracelet"
+  },
+  {
     id: 5,
     name: "Infinix smart 10hd",
     price: 57500,
@@ -152,5 +173,5 @@ const products = [
     price: 37500,
     image: "images/wikot10.jpg",
     category: "Téléphone"
-  },
+  }
 ];
